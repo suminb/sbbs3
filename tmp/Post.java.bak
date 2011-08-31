@@ -1,0 +1,422 @@
+/*
+ * Post.java
+ *
+ * Created on March 17, 2006, 11:25 PM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package beans;
+
+import java.sql.Statement;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
+import utils.Database;
+import utils.Query;
+
+/**
+ *
+ * @author superwtk
+ */
+public final class Post
+		extends Entry
+		implements Accessible, Categorizable, Extendable<PostExtended>, Inheritable<Post>
+{
+	
+	///////////////////////////////////////////////////////
+	// DB fields
+	//
+	private int boardId;
+	private int categoryId;
+	private int userId;
+	
+	private int parentPostId;
+	private int depth;
+	private int childCount;
+	
+	private Date registeredDate;
+	private Date modifiedDate;
+	private Date deletedDate;
+	
+	private String slug;
+	private String excerpt;
+	private String url;
+	
+	private String title;
+	private String content;
+	
+	private int options;
+	
+	///////////////////////////////////////////////////////
+	// non-DB fields
+	//
+	private Board board;
+	private Category category;
+	private User user;
+	private List<PostExtended> extendedElements;
+	
+	
+	/** Creates a new instance of Post */
+	public Post() {
+		extendedElements = new Vector<PostExtended>();
+	}
+	
+	public Post(int id) {
+		this();
+		setId(id);
+	}
+	
+	
+	///////////////////////////////////////////////////////
+	// getters & setters
+	//
+	public int getBoardId() {
+		return boardId;
+	}
+	
+	public void setBoardId(int boardId) {
+		this.boardId = boardId;
+	}
+	
+	public int getCategoryId() {
+		return categoryId;
+	}
+	
+	public void setCategoryId(int categoryId) {
+		this.categoryId = categoryId;
+	}
+	
+	public int getUserId() {
+		return userId;
+	}
+	
+	public void setUserId(int userId) {
+		this.userId = userId;
+	}
+	
+	public int getParentPostId() {
+		return parentPostId;
+	}
+	
+	public void setParentPostId(int parentPostId) {
+		this.parentPostId = parentPostId;
+	}
+	
+	public int getDepth() {
+		return depth;
+	}
+	
+	public void setDepth(int depth) {
+		this.depth = depth;
+	}
+	
+	public int getChildCount() {
+		return childCount;
+	}
+	
+	public void setChildCount(int childCount) {
+		this.childCount = childCount;
+	}
+	
+	public Date getRegisteredDate() {
+		return registeredDate;
+	}
+	
+	public void setRegisteredDate(Date registeredDate) {
+		this.registeredDate = registeredDate;
+	}
+	
+	public Date getModifiedDate() {
+		return modifiedDate;
+	}
+	
+	public void setModifiedDate(Date modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+	
+	public Date getDeletedDate() {
+		return deletedDate;
+	}
+	
+	public void setDeletedDate(Date deletedDate) {
+		this.deletedDate = deletedDate;
+	}
+	
+	public String getSlug() {
+		return slug;
+	}
+	
+	public void setSlug(String slug) {
+		this.slug = slug;
+	}
+	
+	public String getExcerpt() {
+		return excerpt;
+	}
+	
+	public void setExcerpt(String excerpt) {
+		this.excerpt = excerpt;
+	}
+	
+	public String getUrl() {
+		return url;
+	}
+	
+	public void setUrl(String url) {
+		this.url = url;
+	}
+	
+	public String getTitle() {
+		return title;
+	}
+	
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	
+	public String getContent() {
+		return content;
+	}
+	
+	public void setContent(String content) {
+		this.content = content;
+	}
+	
+	public int getOptions() {
+		return options;
+	}
+	
+	public void setOptions(int options) {
+		this.options = options;
+	}
+	
+	public Board getBoard() {
+		return board;
+	}
+	
+	public void setBoard(Board board) {
+		this.board = board;
+	}
+	
+	public Category getCategory() {
+		return category;
+	}
+	
+	public void setCategory(Category category) {
+		this.category = category;
+	}
+	
+	public User getUser() {
+		
+		if(userId != 0) {
+			// registered user
+			
+			user = new User(userId);
+			//user.load();
+		} else {
+			// anonymous user
+			
+			user = new User();
+			//user.setUsername(getExtendedElement("username"));
+			//user.setPassword(getExtendedElement("password"));
+		}
+		
+		return user;
+	}
+	
+	public void setUser(User user) {
+		this.user = user;
+	}
+	
+	///////////////////////////////////////////////////////
+	// Implementations of Accessible
+	//
+	
+	///////////////////////////////////////////////////////
+	// Implementations of Categorizable
+	//
+	
+	///////////////////////////////////////////////////////
+	// Implementations of Extendable
+	//
+	public PostExtended[] getExtendedElements() {
+		return null;
+	}
+	
+	public void setExtendedElements(PostExtended[] elements) {
+		
+	}
+	
+	public void addExtendedElement(PostExtended element) {
+		extendedElements.add(element);
+	}
+	
+	public void replaceExtendedElement(PostExtended element) {
+		int index = extendedElements.indexOf(element);
+		//extendedElements.set
+	}
+	
+	public void removeExtendedElement(PostExtended element) {
+		extendedElements.remove(element);
+	}
+	
+	public PostExtended getExtendedElement() {
+		return null;
+	}
+	
+	public void setExtendedElement(String key, String value) {
+		
+	}
+	
+	public boolean containsKeyOfExtendedElement(String key) {
+		return false;
+	}
+	
+	public boolean containsValueOfExtendedElement(String value) {
+		return false;
+	}
+	
+	public int getIndexOfExtendedElement(String key) {
+		PostExtended element = null;
+		Iterator<PostExtended> iterator = extendedElements.iterator();
+		
+		int index = 0;
+		while(iterator.hasNext()) {
+			element = iterator.next();
+			
+			if(key.equals(element.getKey()))
+				break;
+			
+			index++;
+		}
+		
+		if(index == extendedElements.size())
+			index = -1;
+		
+		return index;
+	}
+	
+	///////////////////////////////////////////////////////
+	// Implementations of Inheritable
+	//
+	public boolean hasParent() {
+		if(parentPostId == 0)
+			return false;
+		else
+			return true;
+	}
+	
+	public boolean hasChildren() {
+		if(childCount == 0)
+			return false;
+		else
+			return true;
+	}
+	
+	public Post getParent() throws SQLException, Exception {
+		
+		if(hasParent()) {
+			Post parent = new Post(getParentPostId());
+			parent.load();
+			
+			return parent;
+		} else {
+			return null;
+		}
+	}
+	
+	// Should this be recursive?
+	public Post[] getChildren() throws SQLException, Exception {
+		return null;
+	}
+	
+	
+	///////////////////////////////////////////////////////
+	// Implementations of Storable
+	//
+	public void load() throws SQLException, Exception {
+		Query query = new Query(Query.SELECT);
+		query.setWhere("post_id=" + id);
+		query.setLimit(1);
+		
+		Database database = new Database();
+		Connection conn = database.connect();
+		Statement stmt = conn.createStatement();
+		ResultSet rs = stmt.executeQuery(query.toString());
+		
+		if(rs.next()) {
+			setBoardId(rs.getInt("board_id"));
+			setCategoryId(rs.getInt("category_id"));
+			
+			setParentPostId(rs.getInt("post_parent_post_id"));
+			setDepth(rs.getInt("post_depth"));
+			setChildCount(rs.getInt("post_child_count"));
+			
+			setRegisteredDate(rs.getDate("post_registered_date"));
+			setModifiedDate(rs.getDate("post_modified_date"));
+			setDeletedDate(rs.getDate("post_deleted_date"));
+			
+			setSlug(rs.getString("post_slug"));
+			setExcerpt(rs.getString("post_excerpt"));
+			setUrl(rs.getString("post_url"));
+			
+			setTitle(rs.getString("post_title"));
+			setContent(rs.getString("post_content"));
+			
+			setOptions(rs.getInt("user_options"));
+		} else {
+			throw new Exception("There is no such a post");
+		}
+		
+		database.disconnect();
+	}
+	
+	public void save(int behavior) throws SQLException, Exception {
+		switch(behavior) {
+			case Storable.INSERT:
+				insert();
+				break;
+				
+			case Storable.UPDATE:
+				update();
+				break;
+				
+			case Storable.DELETE:
+				delete();
+				break;
+		}
+	}
+	
+	public void insert() throws SQLException, Exception {
+		insert(0xFFFFFFFF);
+	}
+	
+	public void insert(int fields) throws SQLException, Exception {
+		
+	}
+	
+	public void update() throws SQLException, Exception {
+		update(0xFFFFFFFF);
+	}
+	
+	public void update(int fields) throws SQLException, Exception {
+		
+	}
+	
+	public void delete() throws SQLException, Exception {
+		Query query = new Query(Query.DELETE);
+		query.setWhere("post_id=" + id);
+		
+		Database database = new Database();
+		Connection conn = database.connect();
+		Statement stmt = conn.createStatement();
+		stmt.execute(query.toString());
+		database.disconnect();
+	}
+}

@@ -1,0 +1,403 @@
+/*
+ * User.java
+ *
+ * Created on March 17, 2006, 11:25 PM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package beans;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+import utils.Database;
+import utils.Field;
+
+/**
+ *
+ * @author superwtk
+ */
+public final class User
+		extends Entry
+		implements Accessible, Extendable {
+	
+	///////////////////////////////////////////////////////
+	// DB fields
+	//
+	private String name;
+	private String password;
+	private int groupCount;
+	
+	private String email;
+	private String familyName;
+	private String givenName;
+	private String middleName;
+	private String nickName;
+	private int timezone;
+	private String signature;
+	
+	private int options;
+	
+	public static int USER_ID =				0x00000001;
+	public static int USER_NAME =			0x00000002;
+	public static int USER_PASSWORD =		0x00000004;
+	
+	public static int USER_FAMILY_NAME =	0x00000010;
+	public static int USER_GIVEN_NAME =		0x00000020;
+	public static int USER_MIDDLE_NAME =	0x00000040;
+	public static int USER_NICK_NAME =		0x00000080;
+	public static int USER_EMAIL =			0x00000100;
+	public static int USER_TIMEZONE =		0x00000200;
+	public static int USER_SIGNATURE =		0x00000400;
+	
+	public static int USER_OPTIONS =		0x80000000;
+	
+	///////////////////////////////////////////////////////
+	// non-DB fields
+	//
+	
+	/**
+	 * Creates a new instance of User
+	 */
+	public User() {
+	}
+	
+	public User(int id) {
+		setId(id);
+	}
+	
+	///////////////////////////////////////////////////////
+	// getters & setters
+	//
+	/**
+	 *
+	 * @return
+	 */
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String username) {
+		this.name = username;
+	}
+	
+	public String getPassword() {
+		return password;
+	}
+	
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	
+	public int getGroupCount() {
+		return groupCount;
+	}
+	
+	public void setGroupCount(int groupCount) {
+		this.groupCount = groupCount;
+	}
+	
+	public String getEmail() {
+		return email;
+	}
+	
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	
+	public String getFamilyName() {
+		return familyName;
+	}
+	
+	public void setFamilyName(String familyName) {
+		this.familyName = familyName;
+	}
+	
+	public String getGivenName() {
+		return givenName;
+	}
+	
+	public void setGivenName(String givenName) {
+		this.givenName = givenName;
+	}
+	
+	public String getMiddleName() {
+		return middleName;
+	}
+	
+	public void setMiddleName(String middleName) {
+		this.middleName = middleName;
+	}
+	
+	public String getNickName() {
+		return nickName;
+	}
+	
+	public void setNickName(String nickName) {
+		this.nickName = nickName;
+	}
+	
+	public int getTimezone() {
+		return timezone;
+	}
+	
+	public void setTimezone(int timezone) {
+		this.timezone = timezone;
+	}
+	
+	public String getSignature() {
+		return signature;
+	}
+	
+	public void setSignature(String signature) {
+		this.signature = signature;
+	}
+	
+	public int getOptions() {
+		return options;
+	}
+	
+	public void setOptions(int options) {
+		this.options = options;
+	}
+	
+	///////////////////////////////////////////////////////
+	// Implements Extendable
+	//
+	public void getExtendedElement(String key) {
+		
+	}
+	
+	public void setExtendedElement(String key, String value) {
+		
+	}
+	
+	///////////////////////////////////////////////////////
+	// implements Storable
+	//
+	
+	/**
+	 * Loads the specified user
+	 * @throws java.sql.SQLException
+	 * @throws java.lang.Exception
+	 */
+	public void load() throws SQLException, Exception {
+		Database database = new Database();
+		Connection conn = database.connect();
+		
+		PreparedStatement stmt = conn.prepareStatement("SELECT * FROM sbbs_users WHERE user_id=? LIMIT 1");
+		stmt.setInt(1, getId());
+		
+		ResultSet rs = stmt.executeQuery();
+		
+		if(rs.next()) {
+			setName(rs.getString("user_name"));
+			setPassword(rs.getString("user_password"));
+			setEmail(rs.getString("user_email"));
+			
+			setFamilyName(rs.getString("user_family_name"));
+			setGivenName(rs.getString("user_given_name"));
+			setMiddleName(rs.getString("user_middle_name"));
+			setNickName(rs.getString("user_nick_name"));
+			setSignature(rs.getString("user_signature"));
+			
+			setOptions(rs.getInt("user_options"));
+		} else {
+			throw new Exception("There is no such a user");
+		}
+		
+		database.disconnect();
+	}
+	
+	/**
+	 *
+	 * @param behavior
+	 * @throws java.sql.SQLException
+	 * @throws java.lang.Exception
+	 */
+	public void save(int behavior) throws SQLException, Exception {
+		switch(behavior) {
+			case Storable.INSERT:
+				insert();
+				break;
+				
+			case Storable.UPDATE:
+				update();
+				break;
+				
+			case Storable.DELETE:
+				delete();
+				break;
+		}
+	}
+	
+	/**
+	 * 
+	 * @throws java.sql.SQLException 
+	 * @throws java.lang.Exception 
+	 */
+	public void insert() throws SQLException, Exception {
+		insert(0xFFFFFFFF);
+	}
+	
+	/**
+	 * 
+	 * @param field 
+	 * @throws java.sql.SQLException 
+	 * @throws java.lang.Exception 
+	 */
+	public void insert(int fields) throws SQLException, Exception {
+		
+		StringBuffer query = new StringBuffer(256);
+		StringBuffer fieldNames = new StringBuffer(128);
+		StringBuffer fieldValues = new StringBuffer(128);
+		query.append("INSERT INTO sbbs_users ");
+		query.append("(");
+
+		
+		if((fields & USER_ID) > 0) {
+			fieldNames.append("user_id,");
+			fieldValues.append("'");
+			fieldValues.append(getId());
+			fieldValues.append("',");
+		}
+		if((fields & USER_NAME) > 0) {
+			query.append("user_name='");
+			query.append(getName());
+			query.append("',");
+		}
+		
+		fieldNames.setCharAt(fieldNames.length()-1, ' ');
+		fieldValues.setCharAt(fieldValues.length()-1, ' ');
+		
+		query.append(");");
+		
+		Database database = new Database();
+		Connection conn = database.connect();
+		Statement stmt = conn.createStatement();
+
+		System.out.println(new String(query));
+		
+		stmt.execute(new String(query));
+	
+		database.disconnect();
+	}
+	
+	/**
+	 * Updates all fields
+	 * @throws java.sql.SQLException 
+	 * @throws java.lang.Exception 
+	 */
+	public void update() throws SQLException, Exception {
+		update(0xFFFFFFFF);
+	}
+	
+	/**
+	 * Updates the specified fields
+	 * @param field 
+	 * @throws java.sql.SQLException 
+	 * @throws java.lang.Exception 
+	 */
+	public void update(int fields) throws SQLException, Exception {
+		
+		if(fields == 0)
+			throw new Exception("Nothing to update");
+		
+		StringBuffer query = new StringBuffer(256);
+		query.append("UPDATE sbbs_users SET ");
+
+		if((fields & USER_ID) == USER_ID) {
+			query.append("user_id='");
+			query.append(getId());
+			query.append("',");
+		}
+		if((fields & USER_NAME) == USER_NAME) {
+			query.append("user_name='");
+			query.append(getName());
+			query.append("',");
+		}
+		if((fields & USER_PASSWORD) == USER_PASSWORD) {
+			query.append("user_password='");
+			query.append(getPassword());
+			query.append("',");
+		}
+		if((fields & USER_FAMILY_NAME) == USER_FAMILY_NAME) {
+			query.append("user_family_name='");
+			query.append(getFamilyName());
+			query.append("',");
+		}
+		if((fields & USER_GIVEN_NAME) == USER_GIVEN_NAME) {
+			query.append("user_given_name='");
+			query.append(getGivenName());
+			query.append("',");
+		}
+		if((fields & USER_MIDDLE_NAME) == USER_MIDDLE_NAME) {
+			query.append("user_middle_name='");
+			query.append(getMiddleName());
+			query.append("',");
+		}
+		if((fields & USER_NICK_NAME) == USER_NICK_NAME) {
+			query.append("user_nick_name='");
+			query.append(getNickName());
+			query.append("',");
+		}
+		if((fields & USER_EMAIL) == USER_EMAIL) {
+			query.append("user_email='");
+			query.append(getEmail());
+			query.append("',");
+		}
+		if((fields & USER_TIMEZONE) == USER_TIMEZONE) {
+			query.append("user_timezone='");
+			query.append(getTimezone());
+			query.append("',");
+		}
+		if((fields & USER_SIGNATURE) == USER_SIGNATURE) {
+			query.append("user_signature='");
+			query.append(getSignature());
+			query.append("',");
+		}
+		if((fields & USER_OPTIONS) == USER_OPTIONS) {
+			query.append("user_options='");
+			query.append(getOptions());
+			query.append("',");
+		}
+		// replace the last character ',' to an white space ' '
+		query.setCharAt(query.length()-1, ' ');
+		
+		query.append("WHERE user_id=");
+		query.append(getId());
+		query.append(" LIMIT 1");
+		
+		Database database = new Database();
+		Connection conn = database.connect();
+		Statement stmt = conn.createStatement();
+		
+		System.out.println(new String(query));
+		
+		stmt.execute(new String(query));
+		
+		database.disconnect();
+	}
+	
+	/**
+	 * 
+	 * @throws java.sql.SQLException 
+	 * @throws java.lang.Exception 
+	 */
+	public void delete() throws SQLException, Exception {
+		Database database = new Database();
+		Connection conn = database.connect();
+		
+		PreparedStatement stmt = conn.prepareStatement("DELETE FROM sbbs_users WHERE user_id=? LIMIT 1");
+		stmt.setInt(1, getId());
+		
+		stmt.execute();
+		
+		database.disconnect();
+	}
+}

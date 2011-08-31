@@ -1,0 +1,19 @@
+C = (F-32)/1.8 says:
+트랙백 구현하려면 어떤 필드가 필요할까
+mydahlia@msn.com says:
+blog_name
+mydahlia@msn.com says:
+excerpt
+mydahlia@msn.com says:
+title
+mydahlia@msn.com says:
+url
+
+mydahlia@msn.com says:
+내부적으로 필요한 게 있으면 추가해야겠죠
+mydahlia@msn.com says:
+고유 번호와
+mydahlia@msn.com says:
+어느 포스팅에 달링 트랙백인지를
+mydahlia@msn.com says:
+추가하면 될 것 같네요

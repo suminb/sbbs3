@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context path="/SBBS3">
+  <Resource name="jdbc/Database"
+			type="javax.sql.DataSource"
+			auth="Container"
+			maxActive="100"
+			maxIdle="30"
+			maxWait="10000"
+			username="remote_user"
+			password="4321qwerasdf"
+			driverClassName="com.mysql.jdbc.Driver"
+			url="jdbc:mysql://61.250.92.162/superwtk-sbbs?autoReconnect=true"
+			/>
+</Context>
